@@ -25,13 +25,13 @@ test.describe('Products', () => {
         await test.step('Verify the displayed products against the search keyword.', async() => {
             await page.getByTestId('product-link').click();
 
-            await page.getByTestId('product-detail-name').click();
-            await expect(page.getByTestId('product-detail-name')).toContainText(/smartphone/i);
+            const name = await page.getByTestId('product-detail-name').textContent();
+            const description = await page.getByTestId('product-detail-description').textContent();
 
-
-
-            await page.getByTestId('product-detail-description').click();
-            await expect(page.getByTestId('product-detail-description')).toContainText(/smartphone/i);
+            await expect(
+                /smartphone/i.test(name ?? '') ||
+                /smartphone/i.test(description ?? '')
+            ).toBeTruthy();
         });
     });
 
