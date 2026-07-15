@@ -15,12 +15,10 @@ test.describe('Authentication', () => {
         await expect(passInput).toBeVisible();
 
         await emailInput.fill('e2e@test.com');
-
         await expect(emailInput).toHaveValue('e2e@test.com');
 
         await passInput.fill('123456');
-
-        await expect(passInput).toHaveValue('123456');
+        await expect(passInput).toHaveAttribute('type', 'password');
 
         await page.getByTestId('login-btn').click();
 
@@ -103,6 +101,8 @@ test.describe('Authentication', () => {
         await expect(passInput).toHaveValue(password);
 
         await registerBtn.click();
+
+        await expect(page).toHaveURL('/login');
 
         await page.getByTestId('login-email-input').fill(uniqueEmail);
         await page.getByTestId('login-password-input').fill(password);
