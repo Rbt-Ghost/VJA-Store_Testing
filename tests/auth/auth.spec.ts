@@ -154,4 +154,49 @@ test.describe('Authentication', () => {
         
         await expect(page).toHaveURL('/register');
     });
+
+    test('[C68] Registration Input Validation', async ({ page }) => {
+        test.step
+        await page.getByRole('link', { name: 'Register' }).click();
+
+        const nameInput = page.getByTestId('register-name-input');
+        const emailInput = page.getByTestId('register-email-input');
+        const passwordInput = page.getByTestId('register-password-input');
+        const registerBtn = page.getByTestId('register-btn');
+        const emailError = page.getByTestId('email-error');
+        const passwordError = page.getByTestId('password-error');
+
+        await expect(emailInput).toBeVisible();
+        await expect(passwordInput).toBeVisible();
+
+        await nameInput.fill('Test User');
+
+        await emailInput.fill('testuser.com');
+        await registerBtn.click();
+        
+        await expect(emailError).toBeVisible();
+
+        await emailInput.fill('user@domain');
+        await registerBtn.click();
+        
+        await expect(emailError).toBeVisible();
+
+        const uniqueEmail = `validuser_${Date.now()}@example.com`;
+        await emailInput.fill(uniqueEmail);
+
+        await passwordInput.fill('123');
+        await registerBtn.click();
+
+        await expect(passwordError).toBeVisible();
+
+        await passwordInput.fill('onlylowercase');
+        await registerBtn.click();
+
+        await expect(passwordError).toBeVisible();
+
+        await passwordInput.fill('ValidPass123!');
+        await registerBtn.click();
+
+        await expect(page).not.toHaveURL('/register');
+    });
 });
