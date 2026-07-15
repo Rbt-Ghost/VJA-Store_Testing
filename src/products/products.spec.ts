@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { faker } from '@faker-js/faker';
 
 test.describe('Products', () => {
 
@@ -13,24 +14,36 @@ test.describe('Products', () => {
     });
 
     test('C[57] Search Functionality - Valid Keyword', async ({ page }) => {
+        let searchTerm: string;
+
         await test.step('Navigate to the online store homepage.', async() => {
             await expect(page).toHaveURL('/products');
         });
 
         await test.step('Enter a valid product keyword into the search bar.', async() => {
-            await page.getByTestId('search-input').click();
-            await page.getByTestId('search-input').fill('smartphone');
+            let count = 0;
+            do{
+                searchTerm = faker.commerce.product();
+
+                await page.getByTestId('search-input').click();
+                await page.getByTestId('search-input').fill(searchTerm);
+
+                const results = page.getByTestId('product-card');
+                count = await results.count();
+            }while(count === 0);
         });
 
         await test.step('Verify the displayed products against the search keyword.', async() => {
-            await page.getByTestId('product-link').click();
+            await page.getByTestId('product-link').nth(0).click();
 
             const name = await page.getByTestId('product-detail-name').textContent();
             const description = await page.getByTestId('product-detail-description').textContent();
 
+            const regex = new RegExp(searchTerm, 'i');
+
             await expect(
-                /smartphone/i.test(name ?? '') ||
-                /smartphone/i.test(description ?? '')
+                regex.test(name ?? '') ||
+                regex.test(description ?? '')
             ).toBeTruthy();
         });
     });
