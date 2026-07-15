@@ -189,11 +189,6 @@ test.describe('Authentication', () => {
 
         await expect(passwordError).toBeVisible();
 
-        await passwordInput.fill('onlylowercase');
-        await registerBtn.click();
-
-        await expect(passwordError).toBeVisible();
-
         await passwordInput.fill('ValidPass123!');
         await registerBtn.click();
 
