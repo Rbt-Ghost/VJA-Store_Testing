@@ -24,7 +24,7 @@ test.describe('Authentication', () => {
 
         await page.getByTestId('login-btn').click();
 
-        await expect(page).not.toHaveURL('/login');
+        await expect(page).toHaveURL('/products');
         await expect(page.getByRole('button', {name: 'Logout'})).toBeVisible();
     });
 
@@ -78,4 +78,38 @@ test.describe('Authentication', () => {
 
         await expect(page).toHaveURL('/login');
     })
+
+    test('[C66] Successful User Registration', async ({ page }) => {
+        await page.getByRole('link', {name: 'Register'}).click();
+
+        const uniqueEmail = 'unique' + Date.now() + '@test.com';
+        const password = '123456';
+
+        const nameInput = page.getByTestId('register-name-input');
+        const emailInput = page.getByTestId('register-email-input');
+        const passInput = page.getByTestId('register-password-input');
+        const registerBtn = page.getByTestId('register-btn');
+
+        await expect(nameInput).toBeVisible();
+        await expect(emailInput).toBeVisible();
+        await expect(passInput).toBeVisible();
+        await expect(registerBtn).toBeVisible();
+
+        await nameInput.fill('Test User');
+        await emailInput.fill(uniqueEmail);
+        await passInput.fill(password);
+        
+        await expect(passInput).toHaveAttribute('type', 'password');
+        await expect(passInput).toHaveValue(password);
+
+        await registerBtn.click();
+
+        await page.getByTestId('login-email-input').fill(uniqueEmail);
+        await page.getByTestId('login-password-input').fill(password);
+        await page.getByTestId('login-btn').click();
+
+        await expect(page.getByRole('button', {name: 'Logout'})).toBeVisible();
+
+        await page.getByRole('link', {name: 'VJA Store' }).click();
+    });
 });
