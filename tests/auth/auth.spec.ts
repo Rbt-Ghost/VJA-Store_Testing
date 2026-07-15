@@ -138,7 +138,7 @@ test.describe('Authentication', () => {
 
         await expect(logoutBtn).toBeHidden();
 
-        await page.goto('http://localhost:3000/');
+        await page.goto('/');
         await page.getByRole('link', { name: 'Register' }).click();
 
         await expect(nameInput).toBeVisible();
