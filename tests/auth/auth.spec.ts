@@ -112,4 +112,46 @@ test.describe('Authentication', () => {
 
         await page.getByRole('link', {name: 'VJA Store' }).click();
     });
+
+    test('[C67] Duplicate Email Registration Prevention', async ({ page }) => {
+        await page.getByRole('link', { name: 'Register' }).click();
+
+        const uniqueEmail = `testuser@example.com`;
+        const nameInput = page.getByTestId('register-name-input');
+        const emailInput = page.getByTestId('register-email-input');
+        const passInput = page.getByTestId('register-password-input');
+        const registerBtn = page.getByTestId('register-btn');
+
+        await expect(nameInput).toBeVisible();
+        await expect(emailInput).toBeVisible();
+        await expect(passInput).toBeVisible();
+
+        await nameInput.fill('First User');
+        await emailInput.fill(uniqueEmail);
+        await passInput.fill('123456');
+        await registerBtn.click();
+
+        const logoutBtn = page.getByRole('button', { name: 'Logout' });
+        if (await logoutBtn.isVisible()) {
+            await logoutBtn.click();
+        }
+
+        await expect(logoutBtn).toBeHidden();
+
+        await page.goto('http://localhost:3000/');
+        await page.getByRole('link', { name: 'Register' }).click();
+
+        await expect(nameInput).toBeVisible();
+
+        await nameInput.fill('Second User');
+        await emailInput.fill(uniqueEmail);
+        await passInput.fill('123456');
+        await registerBtn.click();
+
+        const emailError = page.getByTestId('email-error');
+        
+        await expect(emailError).toBeVisible();
+        
+        await expect(page).toHaveURL('/register');
+    });
 });
