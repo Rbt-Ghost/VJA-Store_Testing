@@ -10,7 +10,26 @@ export const testUsers = {
     },
 
     duplicateUser: {
-        email: 'First User',
+        name: 'First User',
+        email: 'firstuser@test.com',
+        password: '123456',
+    },
+
+    uniqueUser1: {
+        name: 'Unique User 1' + Date.now(),
+        email: 'uniqueuser1' + Date.now() + '@test.com',
+        password: '123456',
+    },
+
+    uniqueUser2: {
+        name: 'Unique User 2' + Date.now(),
+        email: 'uniqueuser2' + Date.now() + '@test.com',
+        password: '123456',
+    },
+
+    uniqueUser3: {
+        name: 'Unique User 3' + Date.now(),
+        email: 'uniqueuser3' + Date.now() + '@test.com',
         password: '123456',
     }
 };

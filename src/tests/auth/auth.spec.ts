@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test } from '../../fixtures/auth';
+import { testUsers } from '../../test-data/users';
 
 test.describe('Authentication', () => {
 
@@ -6,253 +7,135 @@ test.describe('Authentication', () => {
         await page.goto('/login');
     });
 
-    test('[C69] Successful User Login', async ({ page }) => {
-        const emailInput = page.getByTestId('login-email-input');
-        const passInput = page.getByTestId('login-password-input');
-
-        await test.step('Navigate to the application\'s login page.', async () => {
-            await page.getByRole('link', { name: 'Login' }).click();
-            await expect(emailInput).toBeVisible();
-            await expect(passInput).toBeVisible();
+    test('[C69] Successful User Login', async ({ loginPage }) => {
+        await test.step('Access the login portal', async () => {
+            await loginPage.navigateToLogin();
         });
 
-        await test.step('Enter a valid, registered email address in the email field.', async () => {
-            await emailInput.fill('e2e@test.com');
-            
-            await expect(emailInput).toHaveValue('e2e@test.com');
+        await test.step('Submit valid user credentials', async () => {
+            await loginPage.fillLoginCredentials(
+                testUsers.validUser.email, 
+                testUsers.validUser.password,
+                'Enter valid registered email and password.'
+            );
+            await loginPage.submitLogin();
         });
 
-        await test.step('Enter the correct password associated with the account in the password field.', async () => {
-            await passInput.fill('123456');
-            await expect(passInput).toHaveAttribute('type', 'password');
-        });
-
-        await test.step('Click the \'Login\' or \'Sign In\' button.', async () => {
-            await page.getByTestId('login-btn').click();
-        });
-
-        await test.step('Observe the application state after clicking login.', async () => {
-            await expect(page).toHaveURL('/products');
-            await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+        await test.step('Verify the user is successfully logged in', async () => {
+            await loginPage.verifySuccessfulLogin();
         });
     });
 
-    test('[C70] Login with Incorrect Password', async ({ page }) => {
-        const emailInput = page.getByTestId('login-email-input');
-        const passInput = page.getByTestId('login-password-input');
-        const errorMessage = page.getByTestId('login-error');
-
-        await test.step('Navigate to the application login page.', async () => {
-            await page.getByRole('link', { name: 'Login' }).click();
-
-            await expect(emailInput).toBeVisible();
-            await expect(passInput).toBeVisible();
+    test('[C70] Login with Incorrect Password', async ({ loginPage }) => {
+        await test.step('Access the login portal', async () => {
+            await loginPage.navigateToLogin();
         });
 
-        await test.step('Enter a valid, registered email address in the email field.', async () => {
-            await emailInput.fill('e2e@test.com');
-            await expect(emailInput).toHaveValue('e2e@test.com');
+        await test.step('Submit valid email with an incorrect password', async () => {
+            await loginPage.fillLoginCredentials(
+                testUsers.validUser.email, 
+                testUsers.invalidUser.password,
+                'Enter valid email but incorrect password.'
+            );
+            await loginPage.submitLogin();
         });
 
-        await test.step('Enter an incorrect password in the password field.', async () => {
-            await passInput.fill('wrongpassword');
-            
-            await expect(passInput).toHaveAttribute('type', 'password');
-            await expect(passInput).toHaveValue('wrongpassword');
-        });
-
-        await test.step('Click the \'Login\' button.', async () => {
-            // Expected Result 4: The system processes the request and denies access.
-            await page.getByTestId('login-btn').click();
-        });
-
-        await test.step('Observe the UI for feedback.', async () => {
-            await expect(errorMessage).toBeVisible();
-            await expect(page).toHaveURL('/login');
+        await test.step('Verify login failure and error message visibility', async () => {
+            await loginPage.verifyLoginError();
         });
     });
 
-    test('[C71] Login with Non-existent Account', async ({ page }) => {
-        // Declare locators at the top for reuse across steps
-        const emailInput = page.getByTestId('login-email-input');
-        const passInput = page.getByTestId('login-password-input');
-        const errorMessage = page.getByTestId('login-error');
-
-        await test.step('Navigate to the application login page.', async () => {
-            await page.getByRole('link', { name: 'Login' }).click();
-            
-            await expect(emailInput).toBeVisible();
-            await expect(passInput).toBeVisible();
+    test('[C71] Login with Non-existent Account', async ({ loginPage }) => {
+        await test.step('Access the login portal', async () => {
+            await loginPage.navigateToLogin();
         });
 
-        await test.step('Enter an email address that is not registered in the system (e.g., \'nonexistent_user@example.com\').', async () => {
-            await emailInput.fill('nonExistentAccount@test.com');
-            await expect(emailInput).toHaveValue('nonExistentAccount@test.com');
+        await test.step('Submit credentials for an unregistered email', async () => {
+            await loginPage.fillLoginCredentials(
+                testUsers.invalidUser.email, 
+                testUsers.validUser.password,
+                'Enter an email address that is not registered.'
+            );
+            await loginPage.submitLogin();
         });
 
-        await test.step('Enter any valid password format in the password field.', async () => {
-            await passInput.fill('123456');
-            
-            await expect(passInput).toHaveAttribute('type', 'password');
-            await expect(passInput).toHaveValue('123456');
-        });
-
-        await test.step('Click the \'Login\' button.', async () => {
-            await page.getByTestId('login-btn').click();
-        });
-
-        await test.step('Observe the UI for error feedback.', async () => {
-            await expect(errorMessage).toBeVisible();
-            await expect(page).toHaveURL('/login');
+        await test.step('Verify login failure and error message visibility', async () => {
+            await loginPage.verifyLoginError();
         });
     });
 
-    test('[C66] Successful User Registration', async ({ page }) => {
-        const uniqueEmail = 'unique' + Date.now() + '@test.com';
-        const password = '123456';
+    test('[C66] Successful User Registration', async ({ loginPage, page }) => {
+        const { name, email, password } = testUsers.uniqueUser1;
 
-        const nameInput = page.getByTestId('register-name-input');
-        const emailInput = page.getByTestId('register-email-input');
-        const passInput = page.getByTestId('register-password-input');
-        const registerBtn = page.getByTestId('register-btn');
-
-        await test.step('Navigate to the application\'s registration page.', async () => {
-            await page.getByRole('link', { name: 'Register' }).click();
-            
-            await expect(nameInput).toBeVisible();
-            await expect(emailInput).toBeVisible();
-            await expect(passInput).toBeVisible();
-            await expect(registerBtn).toBeVisible();
+        await test.step('Access the registration portal', async () => {
+            await loginPage.navigateToRegister();
         });
 
-        await test.step('Enter a unique, valid email address in the email field.', async () => {
-            await nameInput.fill('Test User');
-            await emailInput.fill(uniqueEmail);
-            
-            await expect(emailInput).toHaveValue(uniqueEmail);
+        await test.step('Submit valid, unique registration details', async () => {
+            await loginPage.fillRegistrationDetails(name, email, password);
+            await loginPage.submitRegistration(true);
         });
 
-        await test.step('Enter a password that meets all defined complexity requirements.', async () => {
-            await passInput.fill(password);
-            
-            await expect(passInput).toHaveAttribute('type', 'password');
-            await expect(passInput).toHaveValue(password);
-        });
-
-        await test.step('Click the \'Register\' or \'Sign Up\' button.', async () => {
-            await registerBtn.click();
-            await expect(page).toHaveURL('/login');
-        });
-
-        await test.step('Verify the user session state.', async () => {
-            await page.getByTestId('login-email-input').fill(uniqueEmail);
-            await page.getByTestId('login-password-input').fill(password);
-            await page.getByTestId('login-btn').click();
-
-            await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
-            
-            await page.getByRole('link', { name: 'VJA Store' }).click();
+        await test.step('Verify the new user can successfully log in', async () => {
+            await loginPage.fillLoginCredentials(email, password);
+            await loginPage.submitLogin();
+            await loginPage.verifySuccessfulLogin();
         });
     });
 
-    test('[C67] Duplicate Email Registration Prevention', async ({ page }) => {
-        const uniqueEmail = `testuser@example.com`; 
-        const nameInput = page.getByTestId('register-name-input');
-        const emailInput = page.getByTestId('register-email-input');
-        const passInput = page.getByTestId('register-password-input');
-        const registerBtn = page.getByTestId('register-btn');
-        const logoutBtn = page.getByRole('button', { name: 'Logout' });
-        const emailError = page.getByTestId('email-error');
+    test('[C67] Duplicate Email Registration Prevention', async ({ loginPage, page }) => {
+        const { name, email, password } = testUsers.uniqueUser2;
 
-        await test.step('Navigate to the registration page of the online store.', async () => {
-            await page.getByRole('link', { name: 'Register' }).click();
-
-            await expect(nameInput).toBeVisible();
-            await expect(emailInput).toBeVisible();
-            await expect(passInput).toBeVisible();
+        await test.step('Register the initial account', async () => {
+            await loginPage.navigateToRegister();
+            await loginPage.fillRegistrationDetails(name, email, password);
+            await loginPage.submitRegistration(true);
         });
-
-        await test.step('Register a new account using a valid, unique email address (e.g., testuser@example.com) and a valid password.', async () => {
-            await nameInput.fill('First User');
-            await emailInput.fill(uniqueEmail);
-            await passInput.fill('123456');
-            await registerBtn.click();
-        });
-
-        await test.step('Log out of the newly created account.', async () => {
-            if (await logoutBtn.isVisible()) {
-                await logoutBtn.click();
-            }
-            
-            await expect(logoutBtn).toBeHidden();
-        });
-
-        await test.step('Navigate back to the registration page.', async () => {
+        
+        await test.step('Log out and return to registration', async () => {
+            await loginPage.logout();
             await page.goto('/');
-            await page.getByRole('link', { name: 'Register' }).click();
-
-            await expect(nameInput).toBeVisible();
+            await loginPage.navigateToRegister();
         });
 
-        await test.step('Attempt to register a new account using the same email address (testuser@example.com) used in the previous step, providing a different name and password.', async () => {
-            await nameInput.fill('Second User');
-            await emailInput.fill(uniqueEmail);
-            await passInput.fill('123456');
-            await registerBtn.click();
+        await test.step('Attempt to register a second account with the same email', async () => {
+            await loginPage.fillRegistrationDetails('Second User', email, password, 'Attempt to register with the same email.');
+            await loginPage.submitRegistration(false);
         });
 
-        await test.step('Observe the UI for error feedback.', async () => {
-            await expect(emailError).toBeVisible();
-            await expect(page).toHaveURL('/register');
+        await test.step('Verify duplicate email error is displayed', async () => {
+            await loginPage.verifyEmailError();
         });
     });
 
-    test('[C68] Registration Input Validation', async ({ page }) => {
-        const nameInput = page.getByTestId('register-name-input');
-        const emailInput = page.getByTestId('register-email-input');
-        const passwordInput = page.getByTestId('register-password-input');
-        const registerBtn = page.getByTestId('register-btn');
-        const emailError = page.getByTestId('email-error');
-        const passwordError = page.getByTestId('password-error');
+    test('[C68] Registration Input Validation', async ({ loginPage }) => {
+        const { name, email, password } = testUsers.uniqueUser3;
 
-        await test.step('Navigate to the registration page of the online store.', async () => {
-            await page.getByRole('link', { name: 'Register' }).click();
-
-            await expect(emailInput).toBeVisible();
-            await expect(passwordInput).toBeVisible();
+        await test.step('Access the registration portal', async () => {
+            await loginPage.navigateToRegister();
         });
 
-        await test.step('Enter an email address missing the \'@\' symbol (e.g., \'testuser.com\') and attempt to submit the form.', async () => {
-            await nameInput.fill('Test User');
-            
-            await emailInput.fill('testuser.com');
-            await registerBtn.click();
-            
-            await expect(emailError).toBeVisible();
+        await test.step('Validate missing @ symbol in email field', async () => {
+            await loginPage.fillRegistrationDetails('Test User', 'testuser.com', '');
+            await loginPage.submitRegistration(false);
+            await loginPage.verifyEmailError();
         });
 
-        await test.step('Enter an email address with an invalid domain (e.g., \'user@domain\') and attempt to submit the form.', async () => {
-            await emailInput.fill('user@domain');
-            await registerBtn.click();
-            
-            await expect(emailError).toBeVisible();
+        await test.step('Validate invalid domain format in email field', async () => {
+            await loginPage.fillRegistrationDetails('', 'user@domain', '');
+            await loginPage.submitRegistration(false);
+            await loginPage.verifyEmailError();
         });
 
-        await test.step('Enter a password that does not meet the minimum length requirement (e.g., 3 characters) and attempt to submit the form.', async () => {
-            const uniqueEmail = `validuser_${Date.now()}@example.com`;
-            await emailInput.fill(uniqueEmail);
-
-            await passwordInput.fill('123');
-            await registerBtn.click();
-
-            await expect(passwordError).toBeVisible();
+        await test.step('Validate password minimum length requirements', async () => {
+            await loginPage.fillRegistrationDetails('name', email, '123');
+            await loginPage.submitRegistration(false);
+            await loginPage.verifyPasswordError();
         });
 
-        await test.step('Enter a valid email address and a password that meets all complexity requirements, then submit the form.', async () => {
-            await passwordInput.fill('ValidPass123!');
-            await registerBtn.click();
-
-            await expect(page).not.toHaveURL('/register');
+        await test.step('Validate successful submission with corrected valid data', async () => {
+            await loginPage.fillRegistrationDetails(name, email, password, 'Correct the email and password to valid formats.');
+            await loginPage.submitRegistration(true);
         });
     });
 });
