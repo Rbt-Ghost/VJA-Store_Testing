@@ -11,10 +11,14 @@ test.describe('Products', () => {
             await expect(page).toHaveURL('/products');
         });
 
-        const searchTerm = await productsPage.searchForValidProduct();
-        await productsPage.verifySearchResults(searchTerm);
+        await test.step('Enter a valid product keyword into the search bar.', async () => {
+            const searchTerm = await productsPage.searchForValidProduct();
+            await productsPage.verifySearchResults(searchTerm);
+        });
 
-        await expect(page).toHaveURL('/products');
+        await test.step('Verify the user goes back to the producs page', async () => {
+            await expect(page).toHaveURL('/products');
+        });
     });
 
     test('[C58] Search Functionality - No Results', async ({ page, productsPage }) => {
