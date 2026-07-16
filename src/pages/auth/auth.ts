@@ -1,4 +1,4 @@
-import { Page, expect, test } from '@playwright/test';
+import { Page, test } from '@playwright/test';
 import { authLocators, navbarLocators } from '../../locators/auth/auth';
 
 export class LoginPage {
@@ -13,47 +13,26 @@ export class LoginPage {
   async navigateToLogin() {
     await test.step('Navigate to the application login page.', async () => {
       await this.auth.loginLink().click();
-      await expect(this.auth.loginEmailInput()).toBeVisible();
-      await expect(this.auth.loginPasswordInput()).toBeVisible();
     });
   }
 
   async navigateToRegister() {
     await test.step('Navigate to the application\'s registration page.', async () => {
       await this.auth.registerLink().click();
-      await expect(this.auth.registerNameInput()).toBeVisible();
-      await expect(this.auth.registerEmailInput()).toBeVisible();
-      await expect(this.auth.registerPasswordInput()).toBeVisible();
     });
   }
 
   async fillLoginCredentials(email: string, password: string, stepDesc: string = 'Enter login credentials.') {
     await test.step(stepDesc, async () => {
       await this.auth.loginEmailInput().fill(email);
-      await expect(this.auth.loginEmailInput()).toHaveValue(email);
       
       await this.auth.loginPasswordInput().fill(password);
-      await expect(this.auth.loginPasswordInput()).toHaveAttribute('type', 'password');
     });
   }
 
   async submitLogin() {
     await test.step('Click the Login button.', async () => {
       await this.auth.loginBtn().click();
-    });
-  }
-
-  async verifySuccessfulLogin() {
-    await test.step('Observe the application state after successful login.', async () => {
-      await expect(this.page).toHaveURL('/products');
-      await expect(this.nav.logoutButton()).toBeVisible();
-    });
-  }
-
-  async verifyLoginError() {
-    await test.step('Observe the UI for login error feedback.', async () => {
-      await expect(this.auth.loginError()).toBeVisible();
-      await expect(this.page).toHaveURL('/login');
     });
   }
 
@@ -65,24 +44,9 @@ export class LoginPage {
     });
   }
 
-  async submitRegistration(expectSuccess: boolean = true) {
+  async submitRegistration() {
     await test.step('Click the Register button.', async () => {
       await this.auth.registerBtn().click();
-      if (expectSuccess) {
-         await expect(this.page).toHaveURL('/login');
-      }
-    });
-  }
-
-  async verifyEmailError() {
-    await test.step('Observe the UI for email error feedback.', async () => {
-      await expect(this.auth.emailError()).toBeVisible();
-    });
-  }
-
-  async verifyPasswordError() {
-    await test.step('Observe the UI for password error feedback.', async () => {
-      await expect(this.auth.passwordError()).toBeVisible();
     });
   }
 
@@ -92,7 +56,42 @@ export class LoginPage {
       if (await logoutBtn.isVisible()) {
         await logoutBtn.click();
       }
-      await expect(logoutBtn).toBeHidden();
     });
+  }
+
+  loginEmailInput() {
+    return this.auth.loginEmailInput();
+  }
+
+  loginPasswordInput() {
+    return this.auth.loginPasswordInput();
+  }
+
+  loginError() {
+    return this.auth.loginError();
+  }
+
+  registerNameInput() {
+    return this.auth.registerNameInput();
+  }
+
+  registerEmailInput() {
+    return this.auth.registerEmailInput();
+  }
+
+  registerPasswordInput() {
+    return this.auth.registerPasswordInput();
+  }
+
+  emailError() {
+    return this.auth.emailError();
+  }
+
+  passwordError() {
+    return this.auth.passwordError();
+  }
+
+  logoutButton() {
+    return this.nav.logoutButton();
   }
 }

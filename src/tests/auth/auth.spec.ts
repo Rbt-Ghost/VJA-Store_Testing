@@ -1,4 +1,4 @@
-import { test } from '../../fixtures/auth';
+import { expect, test } from '../../fixtures/auth';
 import { testUsers } from '../../test-data/users';
 
 test.describe('Authentication', () => {
@@ -10,6 +10,8 @@ test.describe('Authentication', () => {
     test('[C69] Successful User Login', async ({ loginPage }) => {
         await test.step('Access the login portal', async () => {
             await loginPage.navigateToLogin();
+            await expect(loginPage.loginEmailInput()).toBeVisible();
+            await expect(loginPage.loginPasswordInput()).toBeVisible();
         });
 
         await test.step('Submit valid user credentials', async () => {
@@ -18,11 +20,14 @@ test.describe('Authentication', () => {
                 testUsers.validUser.password,
                 'Enter valid registered email and password.'
             );
+            await expect(loginPage.loginEmailInput()).toHaveValue(testUsers.validUser.email);
+            await expect(loginPage.loginPasswordInput()).toHaveAttribute('type', 'password');
             await loginPage.submitLogin();
         });
 
         await test.step('Verify the user is successfully logged in', async () => {
-            await loginPage.verifySuccessfulLogin();
+            await loginPage.page.waitForURL('/products');
+            await expect(loginPage.logoutButton()).toBeVisible();
         });
     });
 
@@ -41,7 +46,8 @@ test.describe('Authentication', () => {
         });
 
         await test.step('Verify login failure and error message visibility', async () => {
-            await loginPage.verifyLoginError();
+            await expect(loginPage.loginError()).toBeVisible();
+            await expect(loginPage.page).toHaveURL('/login');
         });
     });
 
@@ -60,7 +66,8 @@ test.describe('Authentication', () => {
         });
 
         await test.step('Verify login failure and error message visibility', async () => {
-            await loginPage.verifyLoginError();
+            await expect(loginPage.loginError()).toBeVisible();
+            await expect(loginPage.page).toHaveURL('/login');
         });
     });
 
@@ -69,17 +76,22 @@ test.describe('Authentication', () => {
 
         await test.step('Access the registration portal', async () => {
             await loginPage.navigateToRegister();
+            await expect(loginPage.registerNameInput()).toBeVisible();
+            await expect(loginPage.registerEmailInput()).toBeVisible();
+            await expect(loginPage.registerPasswordInput()).toBeVisible();
         });
 
         await test.step('Submit valid, unique registration details', async () => {
             await loginPage.fillRegistrationDetails(name, email, password);
-            await loginPage.submitRegistration(true);
+            await loginPage.submitRegistration();
+            await expect(loginPage.page).toHaveURL('/login');
         });
 
         await test.step('Verify the new user can successfully log in', async () => {
             await loginPage.fillLoginCredentials(email, password);
             await loginPage.submitLogin();
-            await loginPage.verifySuccessfulLogin();
+            await loginPage.page.waitForURL('/products');
+            await expect(loginPage.logoutButton()).toBeVisible();
         });
     });
 
@@ -89,7 +101,8 @@ test.describe('Authentication', () => {
         await test.step('Register the initial account', async () => {
             await loginPage.navigateToRegister();
             await loginPage.fillRegistrationDetails(name, email, password);
-            await loginPage.submitRegistration(true);
+            await loginPage.submitRegistration();
+            await expect(loginPage.page).toHaveURL('/login');
         });
         
         await test.step('Log out and return to registration', async () => {
@@ -100,11 +113,11 @@ test.describe('Authentication', () => {
 
         await test.step('Attempt to register a second account with the same email', async () => {
             await loginPage.fillRegistrationDetails('Second User', email, password, 'Attempt to register with the same email.');
-            await loginPage.submitRegistration(false);
+            await loginPage.submitRegistration();
         });
 
         await test.step('Verify duplicate email error is displayed', async () => {
-            await loginPage.verifyEmailError();
+            await expect(loginPage.emailError()).toBeVisible();
         });
     });
 
@@ -113,29 +126,33 @@ test.describe('Authentication', () => {
 
         await test.step('Access the registration portal', async () => {
             await loginPage.navigateToRegister();
+            await expect(loginPage.registerNameInput()).toBeVisible();
+            await expect(loginPage.registerEmailInput()).toBeVisible();
+            await expect(loginPage.registerPasswordInput()).toBeVisible();
         });
 
         await test.step('Validate missing @ symbol in email field', async () => {
             await loginPage.fillRegistrationDetails('Test User', 'testuser.com', '');
-            await loginPage.submitRegistration(false);
-            await loginPage.verifyEmailError();
+            await loginPage.submitRegistration();
+            await expect(loginPage.emailError()).toBeVisible();
         });
 
         await test.step('Validate invalid domain format in email field', async () => {
             await loginPage.fillRegistrationDetails('', 'user@domain', '');
-            await loginPage.submitRegistration(false);
-            await loginPage.verifyEmailError();
+            await loginPage.submitRegistration();
+            await expect(loginPage.emailError()).toBeVisible();
         });
 
         await test.step('Validate password minimum length requirements', async () => {
             await loginPage.fillRegistrationDetails('name', email, '123');
-            await loginPage.submitRegistration(false);
-            await loginPage.verifyPasswordError();
+            await loginPage.submitRegistration();
+            await expect(loginPage.passwordError()).toBeVisible();
         });
 
         await test.step('Validate successful submission with corrected valid data', async () => {
             await loginPage.fillRegistrationDetails(name, email, password, 'Correct the email and password to valid formats.');
-            await loginPage.submitRegistration(true);
+            await loginPage.submitRegistration();
+            await expect(loginPage.page).toHaveURL('/login');
         });
     });
 });
