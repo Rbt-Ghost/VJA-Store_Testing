@@ -51,6 +51,11 @@ export class ProductsPage {
         });
     }
 
+    async searchForInvalidProduct(testTerm: string = 'xyz123abc99999.') {
+        await this.product.searchInput().click();
+        await this.product.searchInput().fill(testTerm);
+    }
+
     searchInput() {
         return this.product.searchInput();
     }
@@ -73,5 +78,9 @@ export class ProductsPage {
 
     productDetailBack() {
         return this.product.productDetailBack();
+    }
+
+    noResultsMessage() {
+        return this.product.noResultsMessage();
     }
 }

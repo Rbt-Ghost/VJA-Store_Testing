@@ -14,4 +14,7 @@ export const productLocators = (page: Page) => ({
 
     // Buttons
     productDetailBack: () => page.getByTestId('product-detail-back'),
+
+    // No Results
+    noResultsMessage: () => page.getByText('No products foundNo products'),
 });
