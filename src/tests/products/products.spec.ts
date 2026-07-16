@@ -13,6 +13,8 @@ test.describe('Products', () => {
 
         const searchTerm = await productsPage.searchForValidProduct();
         await productsPage.verifySearchResults(searchTerm);
+
+        await expect(page).toHaveURL('/products');
     });
 
     test('[C58] Search Functionality - No Results', async ({ page, productsPage }) => {

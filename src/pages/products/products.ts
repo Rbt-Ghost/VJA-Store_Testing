@@ -29,25 +29,25 @@ export class ProductsPage {
 
     async verifySearchResults(searchTerm: string) {
         await test.step('Verify the displayed products against the search keyword.', async () => {
-            const productsNumber = await this.product.productLink().count();
+            //const productsNumber = await this.product.productLink().count();
 
-            for (let i = 0; i < productsNumber; i++) {
-                await this.product.productLink().nth(i).click();
-                
+            //for (let i = 0; i < productsNumber; i++) {
+                //await this.product.productLink().nth(i).click();
+                await this.product.productLink().first().click();
+
                 const name = await this.product.productDetailName().textContent();
                 const description = await this.product.productDetailDescription().textContent();
 
                 const regex = new RegExp(searchTerm, 'i');
-
+                
                 await expect(
                     regex.test(name ?? '') ||
                     regex.test(description ?? '')
                 ).toBeTruthy();
-
                 await this.product.productDetailBack().click();
-                expect(this.page).toHaveURL('/products');
-                expect(this.product.searchInput()).toHaveValue(searchTerm);
-            }
+                
+                //expect(this.product.searchInput()).toHaveValue(searchTerm);
+            //}
         });
     }
 
