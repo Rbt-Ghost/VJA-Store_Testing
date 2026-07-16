@@ -1,5 +1,4 @@
 import { test, expect } from '../../fixtures/auth';
-import { faker } from '@faker-js/faker';
 
 test.describe('Products', () => {
 
@@ -7,47 +6,13 @@ test.describe('Products', () => {
         await logIn();
     });
 
-    test('C[57] Search Functionality - Valid Keyword', async ({ page }) => {
-        let searchTerm: string;
-
-        await test.step('Navigate to the online store homepage.', async() => {
+    test('C[57] Search Functionality - Valid Keyword', async ({ page, productsPage }) => {
+        await test.step('Navigate to the online store homepage.', async () => {
             await expect(page).toHaveURL('/products');
         });
 
-        await test.step('Enter a valid product keyword into the search bar.', async() => {
-            let count = 0;
-            do{
-                searchTerm = faker.commerce.product();
-
-                await page.getByTestId('search-input').click();
-                await page.getByTestId('search-input').fill(searchTerm);
-
-                const results = page.getByTestId('product-card');
-                count = await results.count();
-            }while(count === 0);
-        });
-
-        await test.step('Verify the displayed products against the search keyword.', async() => {
-            const productsNumber = await page.getByTestId('product-link').count();
-
-            for (let i = 0; i < productsNumber; i++) {
-                await page.getByTestId('product-link').nth(i).click();
-                
-                const name = await page.getByTestId('product-detail-name').textContent();
-                const description = await page.getByTestId('product-detail-description').textContent();
-
-                const regex = new RegExp(searchTerm, 'i');
-
-                await expect(
-                    regex.test(name ?? '') ||
-                    regex.test(description ?? '')
-                ).toBeTruthy();
-
-                await page.getByTestId('product-detail-back').click();
-                expect(page).toHaveURL('/products');
-                expect(page.getByTestId('search-input')).toHaveValue(searchTerm);
-            }
-        });
+        const searchTerm = await productsPage.searchForValidProduct();
+        await productsPage.verifySearchResults(searchTerm);
     });
 
 });
