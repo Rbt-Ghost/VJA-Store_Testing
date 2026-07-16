@@ -1,16 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/auth';
 import { faker } from '@faker-js/faker';
 
 test.describe('Products', () => {
 
-    test.beforeEach(async ({ page }) => {
-        await page.goto('/login');
-        await page.getByRole('link', { name: 'Login' }).click();
-        await page.getByTestId('login-email-input').click();
-        await page.getByTestId('login-email-input').fill('e2e@test.com');
-        await page.getByTestId('login-password-input').click();
-        await page.getByTestId('login-password-input').fill('123456');
-        await page.getByTestId('login-btn').click();
+    test.beforeEach(async ({ logIn }) => {
+        await logIn();
     });
 
     test('C[57] Search Functionality - Valid Keyword', async ({ page }) => {
