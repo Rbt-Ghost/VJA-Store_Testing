@@ -28,17 +28,25 @@ test.describe('Products', () => {
         });
 
         await test.step('Verify the displayed products against the search keyword.', async() => {
-            await page.getByTestId('product-link').nth(0).click();
+            const productsNumber = await page.getByTestId('product-link').count();
 
-            const name = await page.getByTestId('product-detail-name').textContent();
-            const description = await page.getByTestId('product-detail-description').textContent();
+            for (let i = 0; i < productsNumber; i++) {
+                await page.getByTestId('product-link').nth(i).click();
+                
+                const name = await page.getByTestId('product-detail-name').textContent();
+                const description = await page.getByTestId('product-detail-description').textContent();
 
-            const regex = new RegExp(searchTerm, 'i');
+                const regex = new RegExp(searchTerm, 'i');
 
-            await expect(
-                regex.test(name ?? '') ||
-                regex.test(description ?? '')
-            ).toBeTruthy();
+                await expect(
+                    regex.test(name ?? '') ||
+                    regex.test(description ?? '')
+                ).toBeTruthy();
+
+                await page.getByTestId('product-detail-back').click();
+                expect(page).toHaveURL('/products');
+                expect(page.getByTestId('search-input')).toHaveValue(searchTerm);
+            }
         });
     });
 
