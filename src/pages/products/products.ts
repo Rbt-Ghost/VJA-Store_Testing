@@ -1,5 +1,5 @@
 import {Page, test, expect} from '@playwright/test';
-import {productLocators, filterLocators} from '../../locators/products/products';
+import {productLocators, filterLocators} from './locators';
 import { faker } from '@faker-js/faker';
 
 export class ProductsPage {

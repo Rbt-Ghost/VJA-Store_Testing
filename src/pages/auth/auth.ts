@@ -1,5 +1,5 @@
 import { Page, test } from '@playwright/test';
-import { authLocators, navbarLocators } from '../../locators/auth/auth';
+import { authLocators, navbarLocators } from './locators';
 
 export class LoginPage {
     private auth: ReturnType<typeof authLocators>;
