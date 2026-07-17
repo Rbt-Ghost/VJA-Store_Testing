@@ -35,4 +35,30 @@ test.describe('Products', () => {
             await expect(productsPage.productCard()).toHaveCount(0);
         });
     });
+
+    test('[C61] Filtering - Multiple Filter Combination ', async({ page, productsPage }) => {
+        
+        await test.step('Add filters to the product list', async () => {
+            await expect(page).toHaveURL('/products');
+            await productsPage.addFilters();
+        });
+
+        await test.step('Verify that the filtered products are displayed', async () => {
+            await expect(await productsPage.productCard().count() > 0);
+        });
+
+        await test.step('Add products to favorites', async () => {
+            await productsPage.addToFavorites();
+        });
+
+        await test.step('Go to favorites page', async () => {
+            await productsPage.navigateToFavorites();
+            await expect(page).toHaveURL('/favorites');
+        });
+        
+        await test.step('Verify that the products are displayed in the favorites page', async () => {
+            await productsPage.addToFavoritesAgain();
+            await expect(await productsPage.productCard().count() > 0);
+        });
+    });
 });
