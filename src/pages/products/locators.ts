@@ -7,6 +7,8 @@ export const productLocators = (page: Page) => ({
     // Product
     productCard: () => page.getByTestId('product-card'),
     productLink: () => page.getByTestId('product-link'),
+    productList: () => page.getByTestId('product-list'),
+    addToCartBtn: () => page.getByTestId('add-to-cart-btn'),
 
     // Product Detail
     productDetailName: () => page.getByTestId('product-detail-name'),
